@@ -1,37 +1,35 @@
 // types
-import { IIssue, NestedKeyOf } from "types";
+import { TIssueType, TIssueGroupBy, TIssueOrderBy } from "types";
 
-export const GROUP_BY_OPTIONS: Array<{ name: string; key: NestedKeyOf<IIssue> | null }> = [
-  { name: "State", key: "state_detail.name" },
+export const GROUP_BY_OPTIONS: Array<{ name: string; key: TIssueGroupBy }> = [
+  { name: "State", key: "state" },
   { name: "Priority", key: "priority" },
-  { name: "Created By", key: "created_by" },
   { name: "Assignee", key: "assignees" },
   { name: "None", key: null },
 ];
 
-export const ORDER_BY_OPTIONS: Array<{ name: string; key: NestedKeyOf<IIssue> | "manual" | null }> =
-  [
-    // { name: "Manual", key: "manual" },
-    { name: "Last created", key: "created_at" },
-    { name: "Last updated", key: "updated_at" },
-    { name: "Priority", key: "priority" },
-    // { name: "None", key: null },
-  ];
+export const ORDER_BY_OPTIONS: Array<{ name: string; key: TIssueOrderBy }> = [
+  // { name: "Manual", key: "manual" },
+  { name: "Last created", key: "created_at" },
+  { name: "Last updated", key: "updated_at" },
+  { name: "Priority", key: "priority" },
+  // { name: "None", key: null },
+];
 
 export const FILTER_ISSUE_OPTIONS: Array<{
   name: string;
-  key: "activeIssue" | "backlogIssue" | null;
+  key: TIssueType;
 }> = [
   {
     name: "All",
-    key: null,
+    key: "all",
   },
   {
     name: "Active Issues",
-    key: "activeIssue",
+    key: "active",
   },
   {
     name: "Backlog Issues",
-    key: "backlogIssue",
+    key: "backlog",
   },
 ];

@@ -35,6 +35,7 @@ import {
   NestedKeyOf,
   Properties,
   UserAuth,
+  TIssueOrderBy,
 } from "types";
 // fetch-keys
 import { CYCLE_ISSUES, MODULE_ISSUES, PROJECT_ISSUES_LIST } from "constants/fetch-keys";
@@ -49,7 +50,7 @@ type Props = {
   editIssue: () => void;
   removeIssue?: (() => void) | null;
   handleDeleteIssue: (issue: IIssue) => void;
-  orderBy: NestedKeyOf<IIssue> | "manual" | null;
+  orderBy: TIssueOrderBy;
   handleTrashBox: (isDragging: boolean) => void;
   userAuth: UserAuth;
 };

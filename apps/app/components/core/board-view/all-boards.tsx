@@ -7,7 +7,6 @@ import { IIssue, IProjectMember, IState, UserAuth } from "types";
 
 type Props = {
   type: "issue" | "cycle" | "module";
-  issues: IIssue[];
   states: IState[] | undefined;
   members: IProjectMember[] | undefined;
   addIssueToState: (groupTitle: string, stateId: string | null) => void;
@@ -21,7 +20,6 @@ type Props = {
 
 export const AllBoards: React.FC<Props> = ({
   type,
-  issues,
   states,
   members,
   addIssueToState,
@@ -32,7 +30,7 @@ export const AllBoards: React.FC<Props> = ({
   removeIssue,
   userAuth,
 }) => {
-  const { groupedByIssues, groupByProperty: selectedGroup, orderBy } = useIssueView(issues);
+  const { groupedByIssues, groupByProperty: selectedGroup, orderBy } = useIssueView();
 
   return (
     <>
@@ -43,12 +41,12 @@ export const AllBoards: React.FC<Props> = ({
               <div className="flex h-full gap-x-4 overflow-x-auto overflow-y-hidden">
                 {Object.keys(groupedByIssues).map((singleGroup, index) => {
                   const stateId =
-                    selectedGroup === "state_detail.name"
+                    selectedGroup === "state"
                       ? states?.find((s) => s.name === singleGroup)?.id ?? null
                       : null;
 
                   const bgColor =
-                    selectedGroup === "state_detail.name"
+                    selectedGroup === "state"
                       ? states?.find((s) => s.name === singleGroup)?.color
                       : "#000000";
 
@@ -58,7 +56,7 @@ export const AllBoards: React.FC<Props> = ({
                       type={type}
                       bgColor={bgColor}
                       groupTitle={singleGroup}
-                      groupedByIssues={groupedByIssues}
+                      groupedByIssues={groupedByIssues as any}
                       selectedGroup={selectedGroup}
                       members={members}
                       handleEditIssue={handleEditIssue}

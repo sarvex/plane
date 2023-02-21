@@ -1,24 +1,19 @@
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 
 import { useRouter } from "next/router";
 
 import useSWR from "swr";
 
-// services
-import stateService from "services/state.service";
 // contexts
 import { issueViewContext } from "contexts/issue-view.context";
-// helpers
-import { groupBy, orderArrayBy } from "helpers/array.helper";
-import { getStatesList } from "helpers/state.helper";
 // types
-import { IIssue, IState } from "types";
+import { IIssue } from "types";
+// services
+import issuesServices from "services/issues.service";
 // fetch-keys
-import { STATE_LIST } from "constants/fetch-keys";
-// constants
-import { PRIORITIES } from "constants/project";
+import { PROJECT_ISSUES_LIST } from "constants/fetch-keys";
 
-const useIssueView = (projectIssues: IIssue[]) => {
+const useIssueView = () => {
   const {
     issueView,
     groupByProperty,
@@ -33,79 +28,33 @@ const useIssueView = (projectIssues: IIssue[]) => {
     setIssueViewToList,
   } = useContext(issueViewContext);
 
+  const [groupedByIssues, setGroupedByIssues] = useState<{
+    [key: string]: IIssue[];
+  } | null>(null);
+
   const router = useRouter();
   const { workspaceSlug, projectId } = router.query;
 
-  const { data: stateGroups } = useSWR(
-    workspaceSlug && projectId ? STATE_LIST(projectId as string) : null,
+  const { data: issues } = useSWR(
     workspaceSlug && projectId
-      ? () => stateService.getStates(workspaceSlug as string, projectId as string)
+      ? PROJECT_ISSUES_LIST(workspaceSlug as string, projectId as string)
+      : null,
+    workspaceSlug && projectId
+      ? () =>
+          issuesServices.getIssues(workspaceSlug as string, projectId as string, {
+            group_by: groupByProperty,
+            order_by: orderBy,
+            type: filterIssue,
+          })
       : null
   );
-  const states = getStatesList(stateGroups ?? {});
 
-  let groupedByIssues: {
-    [key: string]: IIssue[];
-  } = {};
+  useEffect(() => {
+    if (!issues) return;
 
-  const groupIssues = (states: IState[], issues: IIssue[]) => ({
-    ...(groupByProperty === "state_detail.name"
-      ? Object.fromEntries(
-          states
-            ?.sort((a, b) => a.sequence - b.sequence)
-            ?.map((state) => [
-              state.name,
-              issues.filter((issue) => issue.state === state.name) ?? [],
-            ]) ?? []
-        )
-      : groupByProperty === "priority"
-      ? Object.fromEntries(
-          PRIORITIES.map((priority) => [
-            priority,
-            issues.filter((issue) => issue.priority === priority) ?? [],
-          ])
-        )
-      : {}),
-    ...groupBy(issues ?? [], groupByProperty ?? ""),
-  });
-
-  groupedByIssues = groupIssues(states ?? [], projectIssues);
-
-  if (filterIssue) {
-    if (filterIssue === "activeIssue") {
-      const filteredStates = states?.filter(
-        (s) => s.group === "started" || s.group === "unstarted"
-      );
-      const filteredIssues = projectIssues.filter(
-        (i) => i.state_detail.group === "started" || i.state_detail.group === "unstarted"
-      );
-
-      groupedByIssues = groupIssues(filteredStates ?? [], filteredIssues);
-    } else if (filterIssue === "backlogIssue") {
-      const filteredStates = states?.filter(
-        (s) => s.group === "backlog" || s.group === "cancelled"
-      );
-      const filteredIssues = projectIssues.filter(
-        (i) => i.state_detail.group === "backlog" || i.state_detail.group === "cancelled"
-      );
-
-      groupedByIssues = groupIssues(filteredStates ?? [], filteredIssues);
-    }
-  }
-
-  if (orderBy) {
-    groupedByIssues = Object.fromEntries(
-      Object.entries(groupedByIssues).map(([key, value]) => [
-        key,
-        orderArrayBy(value, orderBy, "descending"),
-      ])
-    );
-  }
-
-  if (groupByProperty === "priority") {
-    delete groupedByIssues.None;
-    if (orderBy === "priority") setOrderBy("created_at");
-  }
+    if (typeof issues === "object" && !Array.isArray(issues)) setGroupedByIssues(issues as any);
+    else if (Array.isArray(issues)) setGroupedByIssues({ "All Issues": issues });
+  }, [issues]);
 
   return {
     groupedByIssues,

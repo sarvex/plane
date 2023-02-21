@@ -15,15 +15,11 @@ import { Squares2X2Icon } from "@heroicons/react/20/solid";
 // helpers
 import { replaceUnderscoreIfSnakeCase } from "helpers/string.helper";
 // types
-import { IIssue, Properties } from "types";
+import { Properties } from "types";
 // common
 import { GROUP_BY_OPTIONS, ORDER_BY_OPTIONS, FILTER_ISSUE_OPTIONS } from "constants/issue";
 
-type Props = {
-  issues?: IIssue[];
-};
-
-export const IssuesFilterView: React.FC<Props> = ({ issues }) => {
+export const IssuesFilterView: React.FC = () => {
   const router = useRouter();
   const { workspaceSlug, projectId } = router.query;
 
@@ -39,7 +35,8 @@ export const IssuesFilterView: React.FC<Props> = ({ issues }) => {
     filterIssue,
     resetFilterToDefault,
     setNewFilterDefaultView,
-  } = useIssueView(issues ?? []);
+    groupedByIssues,
+  } = useIssueView();
 
   const [properties, setProperties] = useIssuesProperties(
     workspaceSlug as string,
@@ -48,7 +45,7 @@ export const IssuesFilterView: React.FC<Props> = ({ issues }) => {
 
   return (
     <>
-      {issues && issues.length > 0 && (
+      {groupedByIssues && (
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-x-1">
             <button
@@ -93,7 +90,7 @@ export const IssuesFilterView: React.FC<Props> = ({ issues }) => {
                 >
                   <Popover.Panel className="absolute right-0 z-20 mt-1 w-screen max-w-xs transform overflow-hidden rounded-lg bg-white p-3 shadow-lg">
                     <div className="relative divide-y-2">
-                      {issues && (
+                      {groupedByIssues && (
                         <div className="space-y-4 pb-3">
                           <div className="flex items-center justify-between">
                             <h4 className="text-sm text-gray-600">Group by</h4>
@@ -181,7 +178,7 @@ export const IssuesFilterView: React.FC<Props> = ({ issues }) => {
                           {Object.keys(properties).map((key) => {
                             if (
                               issueView === "kanban" &&
-                              ((groupByProperty === "state_detail.name" && key === "state") ||
+                              ((groupByProperty === "state" && key === "state") ||
                                 (groupByProperty === "priority" && key === "priority"))
                             )
                               return;

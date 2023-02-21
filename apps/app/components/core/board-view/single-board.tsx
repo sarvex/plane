@@ -14,7 +14,7 @@ import { CustomMenu } from "components/ui";
 // icons
 import { PlusIcon } from "@heroicons/react/24/outline";
 // types
-import { IIssue, IProjectMember, NestedKeyOf, UserAuth } from "types";
+import { IIssue, IProjectMember, NestedKeyOf, UserAuth, TIssueOrderBy } from "types";
 
 type Props = {
   type?: "issue" | "cycle" | "module";
@@ -29,7 +29,7 @@ type Props = {
   addIssueToState: () => void;
   handleDeleteIssue: (issue: IIssue) => void;
   openIssuesListModal?: (() => void) | null;
-  orderBy: NestedKeyOf<IIssue> | "manual" | null;
+  orderBy: TIssueOrderBy;
   handleTrashBox: (isDragging: boolean) => void;
   removeIssue: ((bridgeId: string) => void) | null;
   userAuth: UserAuth;

@@ -1,4 +1,4 @@
-import type { IUserLite, IWorkspace } from "./";
+import type { IUserLite, IWorkspace, TIssueGroupBy, TIssueOrderBy, TIssueType } from "./";
 
 export interface IProject {
   created_at: Date;
@@ -22,9 +22,9 @@ export interface IProject {
 type ProjectViewTheme = {
   collapsed: boolean;
   issueView: "list" | "kanban" | null;
-  groupByProperty: NestedKeyOf<IIssue> | null;
-  filterIssue: "activeIssue" | "backlogIssue" | null;
-  orderBy: NestedKeyOf<IIssue> | null;
+  groupByProperty: TIssueGroupBy;
+  filterIssue: TIssueType;
+  orderBy: TIssueOrderBy;
 };
 
 export interface IProjectMember {

@@ -2,24 +2,24 @@ import { createContext, useCallback, useEffect, useReducer } from "react";
 
 import { useRouter } from "next/router";
 
-import useSWR from "swr";
+import useSWR, { mutate } from "swr";
 
 // components
 import ToastAlert from "components/toast-alert";
 // services
 import projectService from "services/project.service";
 // types
-import type { IIssue, NestedKeyOf } from "types";
+import type { IIssueFilterParams, TIssueGroupBy, TIssueOrderBy, TIssueType } from "types";
 // fetch-keys
-import { USER_PROJECT_VIEW } from "constants/fetch-keys";
+import { USER_PROJECT_VIEW, PROJECT_ISSUES_LIST } from "constants/fetch-keys";
 
 export const issueViewContext = createContext<ContextType>({} as ContextType);
 
 type IssueViewProps = {
   issueView: "list" | "kanban" | null;
-  groupByProperty: NestedKeyOf<IIssue> | null;
-  filterIssue: "activeIssue" | "backlogIssue" | null;
-  orderBy: NestedKeyOf<IIssue> | "manual" | null;
+  groupByProperty: TIssueGroupBy;
+  filterIssue: TIssueType;
+  orderBy: TIssueOrderBy;
 };
 
 type ReducerActionType = {
@@ -34,32 +34,30 @@ type ReducerActionType = {
 };
 
 type ContextType = {
-  orderBy: NestedKeyOf<IIssue> | "manual" | null;
+  orderBy: TIssueOrderBy;
   issueView: "list" | "kanban" | null;
-  groupByProperty: NestedKeyOf<IIssue> | null;
-  filterIssue: "activeIssue" | "backlogIssue" | null;
-  setGroupByProperty: (property: NestedKeyOf<IIssue> | null) => void;
-  setOrderBy: (property: NestedKeyOf<IIssue> | "manual" | null) => void;
-  setFilterIssue: (property: "activeIssue" | "backlogIssue" | null) => void;
+  groupByProperty: TIssueGroupBy;
+  filterIssue: TIssueType;
+  setGroupByProperty: (property: TIssueGroupBy) => void;
+  setOrderBy: (property: TIssueOrderBy) => void;
+  setFilterIssue: (property: TIssueType) => void;
   resetFilterToDefault: () => void;
   setNewFilterDefaultView: () => void;
   setIssueViewToKanban: () => void;
   setIssueViewToList: () => void;
 };
 
-type StateType = {
+type StateType = IIssueFilterParams & {
   issueView: "list" | "kanban" | null;
-  groupByProperty: NestedKeyOf<IIssue> | null;
-  filterIssue: "activeIssue" | "backlogIssue" | null;
-  orderBy: NestedKeyOf<IIssue> | "manual" | null;
 };
+
 type ReducerFunctionType = (state: StateType, action: ReducerActionType) => StateType;
 
 export const initialState: StateType = {
   issueView: "list",
-  groupByProperty: null,
-  orderBy: "created_at",
-  filterIssue: null,
+  group_by: null,
+  order_by: "created_at",
+  type: "all",
 };
 
 export const reducer: ReducerFunctionType = (state, action) => {
@@ -86,7 +84,7 @@ export const reducer: ReducerFunctionType = (state, action) => {
     case "SET_GROUP_BY_PROPERTY": {
       const newState = {
         ...state,
-        groupByProperty: payload?.groupByProperty || null,
+        group_by: payload?.groupByProperty || null,
       };
       return {
         ...state,
@@ -97,7 +95,7 @@ export const reducer: ReducerFunctionType = (state, action) => {
     case "SET_ORDER_BY_PROPERTY": {
       const newState = {
         ...state,
-        orderBy: payload?.orderBy || null,
+        order_by: payload?.orderBy || null,
       };
       return {
         ...state,
@@ -108,7 +106,7 @@ export const reducer: ReducerFunctionType = (state, action) => {
     case "SET_FILTER_ISSUES": {
       const newState = {
         ...state,
-        filterIssue: payload?.filterIssue || null,
+        type: payload?.filterIssue || "all",
       };
       return {
         ...state,
@@ -165,16 +163,16 @@ export const IssueViewContextProvider: React.FC<{ children: React.ReactNode }> =
     dispatch({
       type: "SET_GROUP_BY_PROPERTY",
       payload: {
-        groupByProperty: "state_detail.name",
+        groupByProperty: "state",
       },
     });
 
     if (!workspaceSlug || !projectId) return;
-
+    mutate(PROJECT_ISSUES_LIST(workspaceSlug as string, projectId as string));
     saveDataToServer(workspaceSlug as string, projectId as string, {
       ...state,
       issueView: "kanban",
-      groupByProperty: "state_detail.name",
+      groupByProperty: "state",
     });
   }, [workspaceSlug, projectId, state]);
 
@@ -193,7 +191,7 @@ export const IssueViewContextProvider: React.FC<{ children: React.ReactNode }> =
     });
 
     if (!workspaceSlug || !projectId) return;
-
+    mutate(PROJECT_ISSUES_LIST(workspaceSlug as string, projectId as string));
     saveDataToServer(workspaceSlug as string, projectId as string, {
       ...state,
       issueView: "list",
@@ -202,7 +200,7 @@ export const IssueViewContextProvider: React.FC<{ children: React.ReactNode }> =
   }, [workspaceSlug, projectId, state]);
 
   const setGroupByProperty = useCallback(
-    (property: NestedKeyOf<IIssue> | null) => {
+    (property: TIssueGroupBy | null) => {
       dispatch({
         type: "SET_GROUP_BY_PROPERTY",
         payload: {
@@ -211,6 +209,7 @@ export const IssueViewContextProvider: React.FC<{ children: React.ReactNode }> =
       });
 
       if (!workspaceSlug || !projectId) return;
+      mutate(PROJECT_ISSUES_LIST(workspaceSlug as string, projectId as string));
       saveDataToServer(workspaceSlug as string, projectId as string, {
         ...state,
         groupByProperty: property,
@@ -220,7 +219,7 @@ export const IssueViewContextProvider: React.FC<{ children: React.ReactNode }> =
   );
 
   const setOrderBy = useCallback(
-    (property: NestedKeyOf<IIssue> | "manual" | null) => {
+    (property: TIssueOrderBy) => {
       dispatch({
         type: "SET_ORDER_BY_PROPERTY",
         payload: {
@@ -229,13 +228,14 @@ export const IssueViewContextProvider: React.FC<{ children: React.ReactNode }> =
       });
 
       if (!workspaceSlug || !projectId) return;
+      mutate(PROJECT_ISSUES_LIST(workspaceSlug as string, projectId as string));
       saveDataToServer(workspaceSlug as string, projectId as string, state);
     },
     [projectId, workspaceSlug, state]
   );
 
   const setFilterIssue = useCallback(
-    (property: "activeIssue" | "backlogIssue" | null) => {
+    (property: TIssueType) => {
       dispatch({
         type: "SET_FILTER_ISSUES",
         payload: {
@@ -244,6 +244,7 @@ export const IssueViewContextProvider: React.FC<{ children: React.ReactNode }> =
       });
 
       if (!workspaceSlug || !projectId) return;
+      mutate(PROJECT_ISSUES_LIST(workspaceSlug as string, projectId as string));
       saveDataToServer(workspaceSlug as string, projectId as string, {
         ...state,
         filterIssue: property,
@@ -264,7 +265,9 @@ export const IssueViewContextProvider: React.FC<{ children: React.ReactNode }> =
       type: "RESET_TO_DEFAULT",
       payload: myViewProps?.default_props,
     });
+
     if (!workspaceSlug || !projectId) return;
+    mutate(PROJECT_ISSUES_LIST(workspaceSlug as string, projectId as string));
     saveDataToServer(workspaceSlug as string, projectId as string, myViewProps?.default_props);
   }, [projectId, workspaceSlug, myViewProps]);
 
@@ -279,11 +282,11 @@ export const IssueViewContextProvider: React.FC<{ children: React.ReactNode }> =
     <issueViewContext.Provider
       value={{
         issueView: state.issueView,
-        groupByProperty: state.groupByProperty,
+        groupByProperty: state.group_by,
         setGroupByProperty,
-        orderBy: state.orderBy,
+        orderBy: state.order_by,
         setOrderBy,
-        filterIssue: state.filterIssue,
+        filterIssue: state.type,
         setFilterIssue,
         resetFilterToDefault: resetToDefault,
         setNewFilterDefaultView: setNewDefaultView,

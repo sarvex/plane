@@ -109,6 +109,32 @@ export interface IIssue {
   labels_list: string[];
 }
 
+export type TIssueResponse =
+  | IIssue[]
+  | {
+      [key: string]: IIssue[];
+    };
+
+export type TIssueOrderBy =
+  | "-created_at"
+  | "created_at"
+  | "-updated_at"
+  | "updated_at"
+  | "-priority"
+  | "priority"
+  | "manual"
+  | null;
+
+export type TIssueGroupBy = "assignees" | "labels" | "state" | "priority" | null;
+
+export type TIssueType = "all" | "active" | "backlog";
+
+export interface IIssueFilterParams {
+  order_by: TIssueOrderBy;
+  group_by: TIssueGroupBy;
+  type: TIssueType;
+}
+
 export interface BlockeIssue {
   id: string;
   blocked_issue_detail?: BlockeIssueDetail;
