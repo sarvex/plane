@@ -96,6 +96,7 @@ export interface IIssue {
   project: string;
   project_detail: IProject;
   sequence_id: number;
+  sort_order: number;
   sprints: string | null;
   start_date: string | null;
   state: string;
@@ -122,7 +123,7 @@ export type TIssueOrderBy =
   | "updated_at"
   | "-priority"
   | "priority"
-  | "manual"
+  | "sort_order"
   | null;
 
 export type TIssueGroupBy = "assignees" | "labels" | "state" | "priority" | null;
