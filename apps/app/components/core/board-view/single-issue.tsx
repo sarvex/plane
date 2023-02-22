@@ -189,7 +189,7 @@ export const SingleBoardIssue: React.FC<Props> = ({
 
   return (
     <div
-      className={`rounded border bg-white shadow-sm ${
+      className={`rounded border bg-white shadow-sm mb-3 ${
         snapshot.isDragging ? "border-theme bg-indigo-50 shadow-lg" : ""
       }`}
       ref={provided.innerRef}
@@ -202,7 +202,6 @@ export const SingleBoardIssue: React.FC<Props> = ({
           <div className="absolute top-1.5 right-1.5 z-10 opacity-0 group-hover/card:opacity-100">
             {type && !isNotAllowed && (
               <CustomMenu width="auto" ellipsis>
-                <CustomMenu.MenuItem onClick={handleCopyText}>Copy issue link</CustomMenu.MenuItem>
                 <CustomMenu.MenuItem onClick={editIssue}>Edit</CustomMenu.MenuItem>
                 {type !== "issue" && removeIssue && (
                   <CustomMenu.MenuItem onClick={removeIssue}>
@@ -212,6 +211,7 @@ export const SingleBoardIssue: React.FC<Props> = ({
                 <CustomMenu.MenuItem onClick={() => handleDeleteIssue(issue)}>
                   Delete permanently
                 </CustomMenu.MenuItem>
+                <CustomMenu.MenuItem onClick={handleCopyText}>Copy issue link</CustomMenu.MenuItem>
               </CustomMenu>
             )}
           </div>
