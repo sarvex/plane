@@ -364,66 +364,64 @@ export const IssuesView: React.FC<Props> = ({
         data={issueToDelete}
       />
 
-      <div className="relative">
-        <DragDropContext onDragEnd={handleOnDragEnd}>
-          <StrictModeDroppable droppableId="trashBox">
-            {(provided, snapshot) => (
-              <div
-                className={`${
-                  trashBox ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-                } fixed z-20 top-12 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-red-100 border-2 border-red-500 p-3 text-xs rounded ${
-                  snapshot.isDraggingOver ? "bg-red-500 text-white" : ""
-                } duration-200`}
-                ref={provided.innerRef}
-                {...provided.droppableProps}
-              >
-                <TrashIcon className="h-3 w-3" />
-                Drop issue here to delete
-              </div>
-            )}
-          </StrictModeDroppable>
-          {issueView === "list" ? (
-            <AllLists
-              type={type}
-              issues={issues}
-              states={states}
-              members={members}
-              addIssueToState={addIssueToState}
-              handleEditIssue={handleEditIssue}
-              handleDeleteIssue={handleDeleteIssue}
-              openIssuesListModal={type !== "issue" ? openIssuesListModal : null}
-              removeIssue={
-                type === "cycle"
-                  ? removeIssueFromCycle
-                  : type === "module"
-                  ? removeIssueFromModule
-                  : null
-              }
-              userAuth={userAuth}
-            />
-          ) : (
-            <AllBoards
-              type={type}
-              issues={issues}
-              states={states}
-              members={members}
-              addIssueToState={addIssueToState}
-              handleEditIssue={handleEditIssue}
-              openIssuesListModal={type !== "issue" ? openIssuesListModal : null}
-              handleDeleteIssue={handleDeleteIssue}
-              handleTrashBox={handleTrashBox}
-              removeIssue={
-                type === "cycle"
-                  ? removeIssueFromCycle
-                  : type === "module"
-                  ? removeIssueFromModule
-                  : null
-              }
-              userAuth={userAuth}
-            />
+      <DragDropContext onDragEnd={handleOnDragEnd}>
+        <StrictModeDroppable droppableId="trashBox">
+          {(provided, snapshot) => (
+            <div
+              className={`${
+                trashBox ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+              } fixed z-20 top-12 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-red-100 border-2 border-red-500 p-3 text-xs rounded ${
+                snapshot.isDraggingOver ? "bg-red-500 text-white" : ""
+              } duration-200`}
+              ref={provided.innerRef}
+              {...provided.droppableProps}
+            >
+              <TrashIcon className="h-3 w-3" />
+              Drop issue here to delete
+            </div>
           )}
-        </DragDropContext>
-      </div>
+        </StrictModeDroppable>
+        {issueView === "list" ? (
+          <AllLists
+            type={type}
+            issues={issues}
+            states={states}
+            members={members}
+            addIssueToState={addIssueToState}
+            handleEditIssue={handleEditIssue}
+            handleDeleteIssue={handleDeleteIssue}
+            openIssuesListModal={type !== "issue" ? openIssuesListModal : null}
+            removeIssue={
+              type === "cycle"
+                ? removeIssueFromCycle
+                : type === "module"
+                ? removeIssueFromModule
+                : null
+            }
+            userAuth={userAuth}
+          />
+        ) : (
+          <AllBoards
+            type={type}
+            issues={issues}
+            states={states}
+            members={members}
+            addIssueToState={addIssueToState}
+            handleEditIssue={handleEditIssue}
+            openIssuesListModal={type !== "issue" ? openIssuesListModal : null}
+            handleDeleteIssue={handleDeleteIssue}
+            handleTrashBox={handleTrashBox}
+            removeIssue={
+              type === "cycle"
+                ? removeIssueFromCycle
+                : type === "module"
+                ? removeIssueFromModule
+                : null
+            }
+            userAuth={userAuth}
+          />
+        )}
+      </DragDropContext>
     </>
   );
 };
