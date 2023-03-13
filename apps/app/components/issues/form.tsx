@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 
 // react-hook-form
-import { Controller, useForm } from "react-hook-form";
+import { Controller, FieldErrors, useForm } from "react-hook-form";
 // components
 import {
   IssueAssigneeSelect,
@@ -62,6 +62,7 @@ export interface IssueFormProps {
   setCreateMore: React.Dispatch<React.SetStateAction<boolean>>;
   handleClose: () => void;
   status: boolean;
+  setErrors?: React.Dispatch<React.SetStateAction<FieldErrors<IIssue> | undefined>>;
 }
 
 export const IssueForm: FC<IssueFormProps> = ({
@@ -74,6 +75,7 @@ export const IssueForm: FC<IssueFormProps> = ({
   setCreateMore,
   handleClose,
   status,
+  setErrors,
 }) => {
   // states
   const [mostSimilarIssue, setMostSimilarIssue] = useState<IIssue | undefined>();
@@ -125,6 +127,18 @@ export const IssueForm: FC<IssueFormProps> = ({
       project: projectId,
     });
   }, [setFocus, initialData, reset, projectId]);
+
+  useEffect(() => {
+    if (!setErrors || !errors) return;
+
+    console.log("setting errors");
+    setErrors(errors);
+
+    // remove errors after 3 seconds
+    setTimeout(() => {
+      setErrors(undefined);
+    }, 3000);
+  }, [errors, setErrors]);
 
   return (
     <>
@@ -196,7 +210,6 @@ export const IssueForm: FC<IssueFormProps> = ({
                   placeholder="Title"
                   mode="transparent"
                   autoComplete="off"
-                  error={errors.name}
                   register={register}
                   validations={{
                     required: "Title is required",

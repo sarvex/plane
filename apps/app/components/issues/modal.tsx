@@ -10,6 +10,8 @@ import { Dialog, Transition } from "@headlessui/react";
 import projectService from "services/project.service";
 import modulesService from "services/modules.service";
 import issuesService from "services/issues.service";
+// icons
+import { InformationIcon } from "components/icons";
 // hooks
 import useUser from "hooks/use-user";
 import useToast from "hooks/use-toast";
@@ -27,6 +29,8 @@ import {
   MODULE_ISSUES,
   SUB_ISSUES,
 } from "constants/fetch-keys";
+// types
+import type { FieldErrors } from "react-hook-form";
 
 export interface IssuesModalProps {
   isOpen: boolean;
@@ -46,6 +50,8 @@ export const CreateUpdateIssueModal: React.FC<IssuesModalProps> = ({
   // states
   const [createMore, setCreateMore] = useState(false);
   const [activeProject, setActiveProject] = useState<string | null>(null);
+
+  const [errors, setErrors] = useState<FieldErrors<IIssue>>();
 
   const router = useRouter();
   const { workspaceSlug, projectId, cycleId, moduleId } = router.query;
@@ -215,6 +221,8 @@ export const CreateUpdateIssueModal: React.FC<IssuesModalProps> = ({
     else await updateIssue(payload);
   };
 
+  // console.log("errors: ", errors);
+
   return (
     <Transition.Root show={isOpen} as={React.Fragment}>
       <Dialog as="div" className="relative z-20" onClose={() => {}}>
@@ -229,7 +237,16 @@ export const CreateUpdateIssueModal: React.FC<IssuesModalProps> = ({
         >
           <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
         </Transition.Child>
-
+        {errors && (
+          <div className="fixed top-10 right-10 z-[9999] flex w-96 flex-col gap-y-5">
+            {Object.keys(errors).map((key) => (
+              <div className="flex items-center gap-x-2 rounded-md bg-white p-10 py-12" key={key}>
+                <InformationIcon className="h-5 w-6 text-gray-400" />
+                <span className="text-sm">{errors?.[key as keyof IIssue]?.message as string}</span>
+              </div>
+            ))}
+          </div>
+        )}
         <div className="fixed inset-0 z-10 overflow-y-auto">
           <div className="mt-10 flex min-h-full items-start justify-center p-4 text-center sm:p-0 md:mt-20">
             <Transition.Child
@@ -252,6 +269,7 @@ export const CreateUpdateIssueModal: React.FC<IssuesModalProps> = ({
                   projectId={activeProject ?? ""}
                   setActiveProject={setActiveProject}
                   status={data ? true : false}
+                  setErrors={setErrors}
                 />
               </Dialog.Panel>
             </Transition.Child>
