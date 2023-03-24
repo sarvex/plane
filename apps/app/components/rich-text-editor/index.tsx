@@ -115,7 +115,7 @@ const RemirrorRichTextEditor: FC<IRemirrorRichTextEditor> = (props) => {
   };
 
   // remirror manager
-  const { manager, state } = useRemirror({
+  const { manager, state, setState } = useRemirror({
     extensions: () => [
       new BoldExtension(),
       new ItalicExtension(),
@@ -153,15 +153,9 @@ const RemirrorRichTextEditor: FC<IRemirrorRichTextEditor> = (props) => {
 
   const updateState = useCallback(
     (value: any) => {
-      manager.view.updateState(
-        manager.createState({
-          content:
-            !value || (typeof value === "object" && Object.keys(value).length === 0) ? "" : value,
-          selection: value === "" ? "start" : manager.view.state.selection,
-        })
-      );
+      if (value) setState(value);
     },
-    [manager]
+    [setState]
   );
 
   useEffect(() => {
