@@ -11,6 +11,7 @@ import issuesService from "services/issues.service";
 import stateService from "services/state.service";
 import projectService from "services/project.service";
 import modulesService from "services/modules.service";
+import viewsService from "services/views.service";
 // hooks
 import useToast from "hooks/use-toast";
 import useIssuesView from "hooks/use-issues-view";
@@ -29,6 +30,7 @@ import {
   TrashIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
+import { getStateGroupIcon } from "components/icons";
 // helpers
 import { getStatesList } from "helpers/state.helper";
 // types
@@ -48,17 +50,23 @@ import {
   PROJECT_ISSUES_LIST_WITH_PARAMS,
   PROJECT_MEMBERS,
   STATE_LIST,
+  VIEW_DETAILS,
 } from "constants/fetch-keys";
 import { getPriorityIcon } from "components/icons/priority-icon";
-import { getStateGroupIcon } from "components/icons";
 
 type Props = {
   type?: "issue" | "cycle" | "module";
   openIssuesListModal?: () => void;
+  isCompleted?: boolean;
   userAuth: UserAuth;
 };
 
-export const IssuesView: React.FC<Props> = ({ type = "issue", openIssuesListModal, userAuth }) => {
+export const IssuesView: React.FC<Props> = ({
+  type = "issue",
+  openIssuesListModal,
+  isCompleted = false,
+  userAuth,
+}) => {
   // create issue modal
   const [createIssueModal, setCreateIssueModal] = useState(false);
   const [createViewModal, setCreateViewModal] = useState<any>(null);
@@ -90,6 +98,7 @@ export const IssuesView: React.FC<Props> = ({ type = "issue", openIssuesListModa
     groupByProperty: selectedGroup,
     orderBy,
     filters,
+    isNotEmpty,
     setFilters,
     params,
   } = useIssuesView();
@@ -409,109 +418,95 @@ export const IssuesView: React.FC<Props> = ({ type = "issue", openIssuesListModa
         isOpen={deleteIssueModal}
         data={issueToDelete}
       />
-      <div className="mb-5 -mt-4 flex items-center justify-between gap-2">
-        <div className="flex flex-wrap items-center gap-3 text-xs">
-          {Object.keys(filters).map((key) => {
-            if (filters[key as keyof typeof filters] !== null)
-              return (
-                <div key={key} className="flex items-center gap-x-2 rounded bg-white px-2 py-1">
-                  <span className="font-medium capitalize text-gray-500">{key}:</span>
-                  {filters[key as keyof IIssueFilterOptions] === null ||
-                  (filters[key as keyof IIssueFilterOptions]?.length ?? 0) <= 0 ? (
-                    <span>None</span>
-                  ) : Array.isArray(filters[key as keyof IIssueFilterOptions]) ? (
-                    <div className="space-x-2">
-                      {key === "state"
-                        ? filters.state?.map((stateId: any) => {
-                            const state = states?.find((s) => s.id === stateId);
+      <div className="mb-5 -mt-4">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center gap-3 text-xs">
+            {Object.keys(filters).map((key) => {
+              if (filters[key as keyof typeof filters] !== null)
+                return (
+                  <div key={key} className="flex items-center gap-x-2 rounded bg-white px-2 py-1">
+                    <span className="font-medium capitalize text-gray-500">{key}:</span>
+                    {filters[key as keyof IIssueFilterOptions] === null ||
+                    (filters[key as keyof IIssueFilterOptions]?.length ?? 0) <= 0 ? (
+                      <span>None</span>
+                    ) : Array.isArray(filters[key as keyof IIssueFilterOptions]) ? (
+                      <div className="space-x-2">
+                        {key === "state" ? (
+                          <div className="flex items-center gap-x-1">
+                            {filters.state?.map((stateId: any) => {
+                              const state = states?.find((s) => s.id === stateId);
 
-                            return (
-                              <p
-                                key={state?.id}
-                                className="inline-flex items-center gap-x-1 rounded-full px-2 py-0.5 font-medium text-white"
-                                style={{
-                                  color: state?.color,
-                                  backgroundColor: `${state?.color}20`,
-                                }}
-                              >
-                                <span>
-                                  {getStateGroupIcon(
-                                    state?.group ?? "backlog",
-                                    "12",
-                                    "12",
-                                    state?.color
-                                  )}
-                                </span>
-                                <span>{state?.name ?? ""}</span>
-                                <span
-                                  className="cursor-pointer"
-                                  onClick={() =>
-                                    setFilters(
-                                      {
-                                        state: filters.state?.filter((s: any) => s !== stateId),
-                                      },
-                                      !Boolean(viewId)
-                                    )
-                                  }
+                              return (
+                                <p
+                                  key={state?.id}
+                                  className="inline-flex items-center gap-x-1 rounded-full px-2 py-0.5 font-medium text-white"
+                                  style={{
+                                    color: state?.color,
+                                    backgroundColor: `${state?.color}20`,
+                                  }}
                                 >
-                                  <XMarkIcon className="h-3 w-3" />
-                                </span>
-                              </p>
-                            );
-                          })
-                        : key === "priority"
-                        ? filters.priority?.map((priority: any) => (
-                            <p
-                              key={priority}
-                              className={`inline-flex items-center gap-x-1 rounded-full px-2 py-0.5 font-medium capitalize text-white ${
-                                priority === "urgent"
-                                  ? "bg-red-100 text-red-600 hover:bg-red-100"
-                                  : priority === "high"
-                                  ? "bg-orange-100 text-orange-500 hover:bg-orange-100"
-                                  : priority === "medium"
-                                  ? "bg-yellow-100 text-yellow-500 hover:bg-yellow-100"
-                                  : priority === "low"
-                                  ? "bg-green-100 text-green-500 hover:bg-green-100"
-                                  : "bg-gray-100"
-                              }`}
+                                  <span>
+                                    {getStateGroupIcon(
+                                      state?.group ?? "backlog",
+                                      "12",
+                                      "12",
+                                      state?.color
+                                    )}
+                                  </span>
+                                  <span>{state?.name ?? ""}</span>
+                                  <span
+                                    className="cursor-pointer"
+                                    onClick={() =>
+                                      setFilters(
+                                        {
+                                          state: filters.state?.filter((s: any) => s !== stateId),
+                                        },
+                                        !Boolean(viewId)
+                                      )
+                                    }
+                                  >
+                                    <XMarkIcon className="h-3 w-3" />
+                                  </span>
+                                </p>
+                              );
+                            })}
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setFilters({
+                                  state: null,
+                                })
+                              }
                             >
-                              <span>{getPriorityIcon(priority)}</span>
-                              <span>{priority}</span>
-                              <span
-                                className="cursor-pointer"
-                                onClick={() =>
-                                  setFilters(
-                                    {
-                                      priority: filters.priority?.filter(
-                                        (p: any) => p !== priority
-                                      ),
-                                    },
-                                    !Boolean(viewId)
-                                  )
-                                }
-                              >
-                                <XMarkIcon className="h-3 w-3" />
-                              </span>
-                            </p>
-                          ))
-                        : key === "assignees"
-                        ? filters.assignees?.map((memberId: string) => {
-                            const member = members?.find((m) => m.member.id === memberId)?.member;
-
-                            return (
+                              <XMarkIcon className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ) : key === "priority" ? (
+                          <div className="flex items-center gap-x-1">
+                            {filters.priority?.map((priority: any) => (
                               <p
-                                key={memberId}
-                                className="inline-flex items-center gap-x-1 rounded-full border px-2 py-0.5 font-medium capitalize"
+                                key={priority}
+                                className={`inline-flex items-center gap-x-1 rounded-full px-2 py-0.5 font-medium capitalize text-white ${
+                                  priority === "urgent"
+                                    ? "bg-red-100 text-red-600 hover:bg-red-100"
+                                    : priority === "high"
+                                    ? "bg-orange-100 text-orange-500 hover:bg-orange-100"
+                                    : priority === "medium"
+                                    ? "bg-yellow-100 text-yellow-500 hover:bg-yellow-100"
+                                    : priority === "low"
+                                    ? "bg-green-100 text-green-500 hover:bg-green-100"
+                                    : "bg-gray-100"
+                                }`}
                               >
-                                <Avatar user={member} />
-                                <span>{member?.first_name}</span>
+                                <span>{getPriorityIcon(priority)}</span>
+                                <span>{priority}</span>
                                 <span
                                   className="cursor-pointer"
                                   onClick={() =>
                                     setFilters(
                                       {
-                                        assignees: filters.assignees?.filter(
-                                          (p: any) => p !== memberId
+                                        priority: filters.priority?.filter(
+                                          (p: any) => p !== priority
                                         ),
                                       },
                                       !Boolean(viewId)
@@ -521,38 +516,150 @@ export const IssuesView: React.FC<Props> = ({ type = "issue", openIssuesListModa
                                   <XMarkIcon className="h-3 w-3" />
                                 </span>
                               </p>
-                            );
-                          })
-                        : (filters[key as keyof IIssueFilterOptions] as any)?.join(", ")}
-                    </div>
-                  ) : (
-                    <span className="capitalize">{filters[key as keyof typeof filters]}</span>
-                  )}
-                </div>
-              );
-          })}
-        </div>
+                            ))}
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setFilters({
+                                  priority: null,
+                                })
+                              }
+                            >
+                              <XMarkIcon className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ) : key === "assignees" ? (
+                          <div className="flex items-center gap-x-1">
+                            {filters.assignees?.map((memberId: string) => {
+                              const member = members?.find((m) => m.member.id === memberId)?.member;
 
+                              return (
+                                <p
+                                  key={memberId}
+                                  className="inline-flex items-center gap-x-1 rounded-full border px-2 py-0.5 font-medium capitalize"
+                                >
+                                  <Avatar user={member} />
+                                  <span>{member?.first_name}</span>
+                                  <span
+                                    className="cursor-pointer"
+                                    onClick={() =>
+                                      setFilters(
+                                        {
+                                          assignees: filters.assignees?.filter(
+                                            (p: any) => p !== memberId
+                                          ),
+                                        },
+                                        !Boolean(viewId)
+                                      )
+                                    }
+                                  >
+                                    <XMarkIcon className="h-3 w-3" />
+                                  </span>
+                                </p>
+                              );
+                            })}
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setFilters({
+                                  assignees: null,
+                                })
+                              }
+                            >
+                              <XMarkIcon className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ) : (key as keyof IIssueFilterOptions) === "created_by" ? (
+                          <div className="flex items-center gap-x-1">
+                            {filters.created_by?.map((memberId: string) => {
+                              const member = members?.find((m) => m.member.id === memberId)?.member;
+
+                              return (
+                                <p
+                                  key={memberId}
+                                  className="inline-flex items-center gap-x-1 rounded-full border px-2 py-0.5 font-medium capitalize"
+                                >
+                                  <Avatar user={member} />
+                                  <span>{member?.first_name}</span>
+                                  <span
+                                    className="cursor-pointer"
+                                    onClick={() =>
+                                      setFilters(
+                                        {
+                                          assignees: filters.created_by?.filter(
+                                            (p: any) => p !== memberId
+                                          ),
+                                        },
+                                        !Boolean(viewId)
+                                      )
+                                    }
+                                  >
+                                    <XMarkIcon className="h-3 w-3" />
+                                  </span>
+                                </p>
+                              );
+                            })}
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setFilters({
+                                  created_by: null,
+                                })
+                              }
+                            >
+                              <XMarkIcon className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ) : (
+                          (filters[key as keyof IIssueFilterOptions] as any)?.join(", ")
+                        )}
+                      </div>
+                    ) : (
+                      <span className="capitalize">{filters[key as keyof typeof filters]}</span>
+                    )}
+                  </div>
+                );
+            })}
+          </div>
+
+          {Object.keys(filters).length > 0 &&
+            nullFilters.length !== Object.keys(filters).length && (
+              <PrimaryButton
+                onClick={() => {
+                  if (viewId) {
+                    setFilters({}, true);
+                    setToastAlert({
+                      title: "View updated",
+                      message: "Your view has been updated",
+                      type: "success",
+                    });
+                  } else
+                    setCreateViewModal({
+                      query: filters,
+                    });
+                }}
+                className="flex items-center gap-2 text-sm"
+              >
+                {!viewId && <PlusIcon className="h-4 w-4" />}
+                {viewId ? "Update" : "Save"} view
+              </PrimaryButton>
+            )}
+        </div>
         {Object.keys(filters).length > 0 && nullFilters.length !== Object.keys(filters).length && (
-          <PrimaryButton
-            onClick={() => {
-              if (viewId) {
-                setFilters({}, true);
-                setToastAlert({
-                  title: "View updated",
-                  message: "Your view has been updated",
-                  type: "success",
-                });
-              } else
-                setCreateViewModal({
-                  query: filters,
-                });
-            }}
-            className="flex items-center gap-2 text-sm"
+          <button
+            onClick={() =>
+              setFilters({
+                state: null,
+                priority: null,
+                assignees: null,
+                labels: null,
+              })
+            }
+            className="mt-2 flex items-center gap-x-1 text-xs"
           >
-            {!viewId && <PlusIcon className="h-4 w-4" />}
-            Save view
-          </PrimaryButton>
+            <span>Clear all filters</span>
+            <XMarkIcon className="h-4 w-4" />
+          </button>
         )}
       </div>
       <DragDropContext onDragEnd={handleOnDragEnd}>
@@ -574,7 +681,7 @@ export const IssuesView: React.FC<Props> = ({ type = "issue", openIssuesListModa
           )}
         </StrictModeDroppable>
         {groupedByIssues ? (
-          Object.keys(groupedByIssues).length > 0 ? (
+          isNotEmpty ? (
             <>
               {issueView === "list" ? (
                 <AllLists
@@ -592,6 +699,7 @@ export const IssuesView: React.FC<Props> = ({ type = "issue", openIssuesListModa
                       ? removeIssueFromModule
                       : null
                   }
+                  isCompleted={isCompleted}
                   userAuth={userAuth}
                 />
               ) : (
@@ -611,6 +719,7 @@ export const IssuesView: React.FC<Props> = ({ type = "issue", openIssuesListModa
                       ? removeIssueFromModule
                       : null
                   }
+                  isCompleted={isCompleted}
                   userAuth={userAuth}
                 />
               )}

@@ -40,9 +40,6 @@ export const GithubConfigure: FC<Props> = ({
       (_integration: any) => _integration.integration_detail.id === integration.id
     );
 
-  console.log("integration", integration);
-  console.log("workspaceIntegration", workspaceIntegration);
-
   return (
     <div className="space-y-5">
       <div className="flex items-center gap-2 py-5">

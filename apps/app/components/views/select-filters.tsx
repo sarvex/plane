@@ -22,9 +22,15 @@ type Props = {
   filters: IIssueFilterOptions | IQuery;
   onSelect: (option: any) => void;
   direction?: "left" | "right";
+  height?: "sm" | "md" | "rg" | "lg";
 };
 
-export const SelectFilters: React.FC<Props> = ({ filters, onSelect, direction = "right" }) => {
+export const SelectFilters: React.FC<Props> = ({
+  filters,
+  onSelect,
+  direction = "right",
+  height = "md",
+}) => {
   const router = useRouter();
   const { workspaceSlug, projectId } = router.query;
 
@@ -48,6 +54,7 @@ export const SelectFilters: React.FC<Props> = ({ filters, onSelect, direction = 
       label="Filters"
       onSelect={onSelect}
       direction={direction}
+      height={height}
       options={[
         {
           id: "priority",
@@ -109,6 +116,29 @@ export const SelectFilters: React.FC<Props> = ({ filters, onSelect, direction = 
                 value: member.member.id,
               },
               selected: filters?.assignees?.includes(member.member.id),
+            })) ?? []),
+          ],
+        },
+        {
+          id: "created_by",
+          label: "Created By",
+          value: members,
+          children: [
+            ...(members?.map((member) => ({
+              id: member.member.id,
+              label: (
+                <div className="flex items-center gap-2">
+                  <Avatar user={member.member} />
+                  {member.member.first_name && member.member.first_name !== ""
+                    ? member.member.first_name
+                    : member.member.email}
+                </div>
+              ),
+              value: {
+                key: "created_by",
+                value: member.member.id,
+              },
+              selected: filters?.created_by?.includes(member.member.id),
             })) ?? []),
           ],
         },

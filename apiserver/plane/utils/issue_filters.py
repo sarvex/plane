@@ -8,7 +8,7 @@ def filter_state(params, filter, method):
         if len(states) and "" not in states:
             filter["state__in"] = states
     else:
-        if len(params.get("state")):
+        if params.get("state", None) and len(params.get("state")):
             filter["state__in"] = params.get("state")
     return filter
 
@@ -19,7 +19,7 @@ def filter_priority(params, filter, method):
         if len(priorties) and "" not in priorties:
             filter["priority__in"] = priorties
     else:
-        if len(params.get("priority")):
+        if params.get("priority", None) and len(params.get("priority")):
             filter["priority__in"] = params.get("priority")
     return filter
 
@@ -30,7 +30,7 @@ def filter_parent(params, filter, method):
         if len(parents) and "" not in parents:
             filter["parent__in"] = parents
     else:
-        if len(params.get("parent")):
+        if params.get("parent", None) and len(params.get("parent")):
             filter["parent__in"] = params.get("parent")
     return filter
 
@@ -41,7 +41,7 @@ def filter_labels(params, filter, method):
         if len(labels) and "" not in labels:
             filter["labels__in"] = labels
     else:
-        if len(params.get("labels")):
+        if params.get("labels", None) and len(params.get("labels")):
             filter["labels__in"] = params.get("labels")
     return filter
 
@@ -52,7 +52,7 @@ def filter_assignees(params, filter, method):
         if len(assignees) and "" not in assignees:
             filter["assignees__in"] = assignees
     else:
-        if len(params.get("assignees")):
+        if params.get("assignees", None) and len(params.get("assignees")):
             filter["assignees__in"] = params.get("assignees")
     return filter
 
@@ -63,7 +63,7 @@ def filter_created_by(params, filter, method):
         if len(created_bys) and "" not in created_bys:
             filter["created_by__in"] = created_bys
     else:
-        if len(params.get("created_by")):
+        if params.get("created_by", None) and len(params.get("created_by")):
             filter["created_by__in"] = params.get("created_by")
     return filter
 
@@ -85,7 +85,7 @@ def filter_created_at(params, filter, method):
                 else:
                     filter["created_at__date__lte"] = created_at_query[0]
     else:
-        if len(params.get("created_at")):
+        if params.get("created_at", None) and len(params.get("created_at")):
             for query in params.get("created_at"):
                 if query.get("timeline", "after") == "after":
                     filter["created_at__date__gte"] = query.get("datetime")
@@ -96,16 +96,16 @@ def filter_created_at(params, filter, method):
 
 def filter_updated_at(params, filter, method):
     if method == "GET":
-        updated_bys = params.get("updated_at").split(",")
-        if len(updated_bys) and "" not in updated_bys:
-            for query in updated_bys:
+        updated_ats = params.get("updated_at").split(",")
+        if len(updated_ats) and "" not in updated_ats:
+            for query in updated_ats:
                 updated_at_query = query.split(";")
                 if len(updated_at_query) == 2 and "after" in updated_at_query:
                     filter["updated_at__date__gte"] = updated_at_query[0]
                 else:
                     filter["updated_at__date__lte"] = updated_at_query[0]
     else:
-        if len(params.get("updated_at")):
+        if params.get("updated_at", None) and len(params.get("updated_at")):
             for query in params.get("updated_at"):
                 if query.get("timeline", "after") == "after":
                     filter["updated_at__date__gte"] = query.get("datetime")
@@ -116,41 +116,41 @@ def filter_updated_at(params, filter, method):
 
 def filter_start_date(params, filter, method):
     if method == "GET":
-        start_dates = params.get("start_date").split(";")
+        start_dates = params.get("start_date").split(",")
         if len(start_dates) and "" not in start_dates:
             for query in start_dates:
                 start_date_query = query.split(";")
                 if len(start_date_query) == 2 and "after" in start_date_query:
-                    filter["start_date__date__gte"] = start_date_query[0]
+                    filter["start_date__gte"] = start_date_query[0]
                 else:
-                    filter["start_date__date__lte"] = start_date_query[0]
+                    filter["start_date__lte"] = start_date_query[0]
     else:
-        if len(params.get("start_date")):
+        if params.get("start_date", None) and len(params.get("start_date")):
             for query in params.get("start_date"):
                 if query.get("timeline", "after") == "after":
-                    filter["start_date__date__gte"] = query.get("datetime")
+                    filter["start_date__gte"] = query.get("datetime")
                 else:
-                    filter["start_date__date__lte"] = query.get("datetime")
+                    filter["start_date__lte"] = query.get("datetime")
     return filter
 
 
 def filter_target_date(params, filter, method):
     if method == "GET":
-        target_dates = params.get("target_date").split(";")
+        target_dates = params.get("target_date").split(",")
         if len(target_dates) and "" not in target_dates:
             for query in target_dates:
                 target_date_query = query.split(";")
                 if len(target_date_query) == 2 and "after" in target_date_query:
-                    filter["target_date__date__gte"] = target_date_query[0]
+                    filter["target_date__gte"] = target_date_query[0]
                 else:
-                    filter["target_date__date__lte"] = target_date_query[0]
+                    filter["target_date__lte"] = target_date_query[0]
     else:
-        if len(params.get("target_date")):
+        if params.get("target_date", None) and len(params.get("target_date")):
             for query in params.get("target_date"):
                 if query.get("timeline", "after") == "after":
-                    filter["target_date__date__gte"] = query.get("datetime")
+                    filter["target_date__gte"] = query.get("datetime")
                 else:
-                    filter["target_date__date__lte"] = query.get("datetime")
+                    filter["target_date__lte"] = query.get("datetime")
 
     return filter
 
@@ -166,7 +166,7 @@ def filter_completed_at(params, filter, method):
                 else:
                     filter["completed_at__lte"] = completed_at_query[0]
     else:
-        if len(params.get("completed_at")):
+        if params.get("completed_at", None) and len(params.get("completed_at")):
             for query in params.get("completed_at"):
                 if query.get("timeline", "after") == "after":
                     filter["completed_at__date__gte"] = query.get("datetime")

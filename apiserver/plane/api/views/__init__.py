@@ -116,5 +116,13 @@ from .page import (
     PageBlockViewSet,
     PageFavoriteViewSet,
     CreateIssueFromPageBlockEndpoint,
+    RecentPagesEndpoint,
+    FavoritePagesEndpoint,
     MyPagesEndpoint,
+    CreatedbyOtherPagesEndpoint,
 )
+
+from .search import GlobalSearchEndpoint
+
+
+from .gpt import GPTIntegrationEndpoint
