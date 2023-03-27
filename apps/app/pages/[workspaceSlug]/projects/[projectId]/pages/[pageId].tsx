@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
 import { useRouter } from "next/router";
 
@@ -11,7 +11,7 @@ import { Popover, Transition } from "@headlessui/react";
 // react-color
 import { TwitterPicker } from "react-color";
 // lib
-import { requiredAuth } from "lib/auth";
+import { requiredAdmin, requiredAuth } from "lib/auth";
 // services
 import projectService from "services/project.service";
 import pagesService from "services/pages.service";
@@ -33,7 +33,7 @@ import { renderShortTime } from "helpers/date-time.helper";
 import { copyTextToClipboard } from "helpers/string.helper";
 // types
 import type { NextPage, GetServerSidePropsContext } from "next";
-import { IIssueLabels, IPage, IPageBlock } from "types";
+import { IIssueLabels, IPage, IPageBlock, UserAuth } from "types";
 // fetch-keys
 import {
   PAGE_BLOCKS_LIST,
@@ -42,7 +42,9 @@ import {
   PROJECT_ISSUE_LABELS,
 } from "constants/fetch-keys";
 
-const SinglePage: NextPage = () => {
+const SinglePage: NextPage<UserAuth> = (props) => {
+  const [isAddingBlock, setIsAddingBlock] = useState(false);
+
   const router = useRouter();
   const { workspaceSlug, projectId, pageId } = router.query;
 
@@ -132,6 +134,8 @@ const SinglePage: NextPage = () => {
   const createPageBlock = async () => {
     if (!workspaceSlug || !projectId || !pageId) return;
 
+    setIsAddingBlock(true);
+
     await pagesService
       .createPageBlock(workspaceSlug as string, projectId as string, pageId as string, {
         name: "New block",
@@ -149,6 +153,9 @@ const SinglePage: NextPage = () => {
           title: "Error!",
           message: "Page could not be created. Please try again.",
         });
+      })
+      .finally(() => {
+        setIsAddingBlock(false);
       });
   };
 
@@ -233,6 +240,7 @@ const SinglePage: NextPage = () => {
       meta={{
         title: "Plane - Pages",
       }}
+      memberType={props}
       breadcrumbs={
         <Breadcrumbs>
           <BreadcrumbItem title="Projects" link={`/${workspaceSlug}/projects`} />
@@ -391,17 +399,8 @@ const SinglePage: NextPage = () => {
           </div>
           <div className="px-3">
             {pageBlocks ? (
-              pageBlocks.length === 0 ? (
-                <button
-                  type="button"
-                  className="flex items-center gap-1 rounded px-2.5 py-1 text-xs hover:bg-gray-100"
-                  onClick={createPageBlock}
-                >
-                  <PlusIcon className="h-3 w-3" />
-                  Add new block
-                </button>
-              ) : (
-                <>
+              <>
+                {pageBlocks.length !== 0 && (
                   <div className="space-y-4">
                     {pageBlocks.map((block) => (
                       <SinglePageBlock
@@ -411,18 +410,23 @@ const SinglePage: NextPage = () => {
                       />
                     ))}
                   </div>
-                  <div className="">
-                    <button
-                      type="button"
-                      className="flex items-center gap-1 rounded px-2.5 py-1 text-xs hover:bg-gray-100"
-                      onClick={createPageBlock}
-                    >
+                )}
+                <button
+                  type="button"
+                  className="flex items-center gap-1 rounded px-2.5 py-1 text-xs hover:bg-gray-100"
+                  onClick={createPageBlock}
+                  disabled={isAddingBlock}
+                >
+                  {isAddingBlock ? (
+                    "Adding block..."
+                  ) : (
+                    <>
                       <PlusIcon className="h-3 w-3" />
                       Add new block
-                    </button>
-                  </div>
-                </>
-              )
+                    </>
+                  )}
+                </button>
+              </>
             ) : (
               <Loader>
                 <Loader.Item height="150px" />
@@ -454,9 +458,17 @@ export const getServerSideProps = async (ctx: GetServerSidePropsContext) => {
     };
   }
 
+  const projectId = ctx.query.projectId as string;
+  const workspaceSlug = ctx.query.workspaceSlug as string;
+
+  const memberDetail = await requiredAdmin(workspaceSlug, projectId, ctx.req?.headers.cookie);
+
   return {
     props: {
-      user,
+      isOwner: memberDetail?.role === 20,
+      isMember: memberDetail?.role === 15,
+      isViewer: memberDetail?.role === 10,
+      isGuest: memberDetail?.role === 5,
     },
   };
 };
