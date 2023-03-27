@@ -11,8 +11,12 @@ class GithubIntegrationService extends APIService {
 
   // fetching all the repositories under the github
   async listAllRepositories(workspaceSlug: string, integrationSlug: string): Promise<any> {
-    return this.get(
-      `/api/workspaces/${workspaceSlug}/workspace-integrations/${integrationSlug}/github-repositories`
+    console.log(
+      `/api/workspaces/${workspaceSlug}/workspace-integrations/${integrationSlug}/github-repositories/?page=${0}`
+    );
+    this.baseURL = "";
+    return this.getWithoutBase(
+      `/api/workspaces/${workspaceSlug}/workspace-integrations/${integrationSlug}/github-repositories/?page=${0}`
     )
       .then((response) => response?.data)
       .catch((error) => {

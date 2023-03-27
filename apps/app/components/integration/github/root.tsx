@@ -1,7 +1,9 @@
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 // next imports
 import Link from "next/link";
 import Image from "next/image";
+// swr
+import useSWR from "swr";
 // icons
 import GithubLogo from "public/logos/github-square.png";
 import { CogIcon, CloudUploadIcon, UsersIcon, ImportLayersIcon, CheckIcon } from "components/icons";
@@ -16,6 +18,8 @@ import {
 } from "components/integration";
 // types
 import { IAppIntegrations } from "types";
+// api services
+import GithubIntegrationService from "services/integration/github.service";
 
 type Props = {
   workspaceSlug: string | undefined;
@@ -30,6 +34,9 @@ type Props = {
 
 export interface IIntegrationData {
   state: string;
+  currentIntegration: any;
+  repositoryId: string | null;
+  projectId: string | null;
 }
 
 export const GithubIntegrationRoot: FC<Props> = ({
@@ -53,11 +60,11 @@ export const GithubIntegrationRoot: FC<Props> = ({
       key: "import-import-data",
       icon: CloudUploadIcon,
     },
-    { title: "Issues", key: "migrate-issues", icon: UsersIcon },
+    { title: "Issues", key: "migrate-issues", icon: ImportLayersIcon },
     {
       title: "Users",
       key: "migrate-users",
-      icon: ImportLayersIcon,
+      icon: UsersIcon,
     },
     {
       title: "Confirm",
@@ -75,10 +82,66 @@ export const GithubIntegrationRoot: FC<Props> = ({
 
   const [integrationData, setIntegrationData] = useState<IIntegrationData>({
     state: "import-configure",
+    currentIntegration: null,
+    repositoryId: null,
+    projectId: null,
   });
-  const handleIntegrationData = (key: string = "state", value: string) => {
+  const handleIntegrationData = (key: string, value: any) => {
     setIntegrationData((previousData) => ({ ...previousData, [key]: value }));
   };
+
+  console.log("integrationData", integrationData);
+
+  // fetching github repositories
+  // const { data: githubRepositories, error: githubRepositoriesError } = useSWR<
+  //   IAppIntegrations[] | undefined,
+  //   Error
+  // >(
+  //   integrationData && integrationData?.currentIntegration != null && workspaceSlug
+  //     ? `ALL_INTEGRATIONS_${workspaceSlug.toUpperCase()}`
+  //     : null,
+  //   integrationData && integrationData?.currentIntegration != null && workspaceSlug
+  //     ? () =>
+  //         GithubIntegrationService.listAllRepositories(
+  //           workspaceSlug,
+  //           integrationData?.currentIntegration?.integration
+  //         )
+  //     : null
+  // );
+
+  // console.log("githubRepositories", githubRepositories);
+
+  // fetching all the projects under the workspace
+  // const { data: workspaceProjects, error: workspaceProjectsError } = useSWR<
+  //   IAppIntegrations[] | undefined,
+  //   Error
+  // >(
+  //   workspaceSlug ? `ALL_INTEGRATIONS_${workspaceSlug.toUpperCase()}` : null,
+  //   workspaceSlug ? () => WorkspaceIntegrationService.listAllIntegrations() : null
+  // );
+
+  useEffect(() => {
+    if (
+      integrationData?.currentIntegration === null &&
+      allIntegrations &&
+      allIntegrations.length > 0 &&
+      allWorkspaceIntegrations &&
+      allWorkspaceIntegrations.length > 0
+    ) {
+      const currentIntegration =
+        allIntegrations &&
+        allIntegrations.length > 0 &&
+        allIntegrations.find((_integration) => _integration.provider === provider);
+
+      if (currentIntegration)
+        setIntegrationData((previousData) => ({
+          ...previousData,
+          currentIntegration: allWorkspaceIntegrations.find(
+            (_integration: any) => _integration.integration_detail.id === currentIntegration.id
+          ),
+        }));
+    }
+  }, [allIntegrations, allWorkspaceIntegrations, provider, integrationData]);
 
   return (
     <div className="space-y-4">
@@ -141,15 +204,19 @@ export const GithubIntegrationRoot: FC<Props> = ({
                 state={integrationData}
                 handleState={handleIntegrationData}
                 workspaceSlug={workspaceSlug}
-                provider={provider}
-                allIntegrations={allIntegrations}
-                allIntegrationsError={allIntegrationsError}
-                allWorkspaceIntegrations={allWorkspaceIntegrations}
-                allWorkspaceIntegrationsError={allWorkspaceIntegrationsError}
               />
             )}
             {integrationData?.state === "import-import-data" && (
-              <GithubImportData state={integrationData} handleState={handleIntegrationData} />
+              <GithubImportData
+                state={integrationData}
+                handleState={handleIntegrationData}
+                // workspaceSlug={workspaceSlug}
+                // provider={provider}
+                // allIntegrations={allIntegrations}
+                // allIntegrationsError={allIntegrationsError}
+                // allWorkspaceIntegrations={allWorkspaceIntegrations}
+                // allWorkspaceIntegrationsError={allWorkspaceIntegrationsError}
+              />
             )}
             {integrationData?.state === "migrate-issues" && (
               <GithubIssuesSelect state={integrationData} handleState={handleIntegrationData} />
