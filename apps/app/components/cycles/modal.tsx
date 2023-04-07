@@ -39,6 +39,21 @@ export const CreateUpdateCycleModal: React.FC<CycleModalProps> = ({
 
   const { setToastAlert } = useToast();
 
+  const dateChecker = async (startDate: string | null, endDate: string | null) => {
+    if (!workspaceSlug || !projectId) return;
+
+    if ((startDate === "" && endDate === "") || (!startDate && !endDate)) return true;
+
+    const payload = {
+      start_date: startDate ?? "",
+      end_date: endDate ?? "",
+    };
+
+    await cycleService
+      .cycleDateCheck(workspaceSlug as string, projectId as string, payload)
+      .then((res) => res.status);
+  };
+
   const createCycle = async (payload: Partial<ICycle>) => {
     await cycleService
       .createCycle(workspaceSlug as string, projectId as string, payload)
@@ -133,8 +148,18 @@ export const CreateUpdateCycleModal: React.FC<CycleModalProps> = ({
       ...formData,
     };
 
-    if (!data) await createCycle(payload);
-    else await updateCycle(data.id, payload);
+    const areDatesValid = await dateChecker(payload.start_date ?? "", payload.end_date ?? "");
+
+    if (areDatesValid) {
+      if (!data) await createCycle(payload);
+      else await updateCycle(data.id, payload);
+    } else
+      setToastAlert({
+        type: "error",
+        title: "Error!",
+        message:
+          "You already have a cycle in the given date range, if you want to create a draft cycle you can do that by removing both the dates",
+      });
   };
 
   return (

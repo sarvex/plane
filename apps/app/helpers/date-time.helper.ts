@@ -174,10 +174,15 @@ export const renderShortTime = (date: string | Date) => {
   return hours + ":" + minutes;
 };
 
-export const isDateRangeValid = (startDate: string, endDate: string) =>
-  new Date(startDate) < new Date(endDate);
+export const isDateRangeValid = (startDate: string | Date, endDate: string | Date) => {
+  if (!startDate || !endDate) return false;
+
+  return new Date(startDate) < new Date(endDate);
+};
 
 export const renderLongDateFormat = (dateString: string) => {
+  if (!dateString) return "";
+
   const date = new Date(dateString);
   const day = date.getDate();
   const year = date.getFullYear();

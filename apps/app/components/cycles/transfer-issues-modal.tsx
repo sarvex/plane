@@ -136,7 +136,7 @@ export const TransferIssuesModal: React.FC<Props> = ({ isOpen, handleClose }) =>
                         <div className="flex items-center justify-center gap-4 p-5 text-sm w-full">
                           <ExclamationIcon height={14} width={14} />
                           <span className="text-center text-gray-500">
-                            You don’t have any current cycle. Please create one to transfer the
+                            You don{"'"}t have any current cycle. Please create one to transfer the
                             issues.
                           </span>
                         </div>
