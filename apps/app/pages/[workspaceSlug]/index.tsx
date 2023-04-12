@@ -37,6 +37,8 @@ const WorkspacePage: NextPage = () => {
     mutate(USER_WORKSPACE_DASHBOARD(workspaceSlug as string));
   }, [month, workspaceSlug]);
 
+  console.log(process.env.NEXT_PUBLIC_API_BASE_URL);
+
   return (
     <WorkspaceAuthorizationLayout noHeader>
       <div className="h-full w-full">
