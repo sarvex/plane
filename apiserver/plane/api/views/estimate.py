@@ -75,12 +75,11 @@ class EstimatePointViewSet(BaseViewSet):
                     {"error": "The estimate point is already taken"},
                     status=status.HTTP_410_GONE,
                 )
-            else:
-                capture_exception(e)
-                return Response(
-                    {"error": "Something went wrong please try again later"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+            capture_exception(e)
+            return Response(
+                {"error": "Something went wrong please try again later"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
     def partial_update(self, request, slug, project_id, estimate_id, pk):
         try:
@@ -108,12 +107,11 @@ class EstimatePointViewSet(BaseViewSet):
                     {"error": "The estimate point value is already taken"},
                     status=status.HTTP_410_GONE,
                 )
-            else:
-                capture_exception(e)
-                return Response(
-                    {"error": "Something went wrong please try again later"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+            capture_exception(e)
+            return Response(
+                {"error": "Something went wrong please try again later"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
 
 class ProjectEstimatePointEndpoint(BaseAPIView):

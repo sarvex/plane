@@ -103,27 +103,26 @@ class CycleViewSet(BaseViewSet):
     def create(self, request, slug, project_id):
         try:
             if (
-                request.data.get("start_date", None) is None
-                and request.data.get("end_date", None) is None
-            ) or (
                 request.data.get("start_date", None) is not None
-                and request.data.get("end_date", None) is not None
+                or request.data.get("end_date", None) is not None
+            ) and (
+                request.data.get("start_date", None) is None
+                or request.data.get("end_date", None) is None
             ):
-                serializer = CycleSerializer(data=request.data)
-                if serializer.is_valid():
-                    serializer.save(
-                        project_id=project_id,
-                        owned_by=request.user,
-                    )
-                    return Response(serializer.data, status=status.HTTP_201_CREATED)
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            else:
                 return Response(
                     {
                         "error": "Both start date and end date are either required or are to be null"
                     },
                     status=status.HTTP_400_BAD_REQUEST,
                 )
+            serializer = CycleSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save(
+                    project_id=project_id,
+                    owned_by=request.user,
+                )
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             capture_exception(e)
             return Response(
@@ -700,12 +699,11 @@ class CycleFavoriteViewSet(BaseViewSet):
                     {"error": "The cycle is already added to favorites"},
                     status=status.HTTP_410_GONE,
                 )
-            else:
-                capture_exception(e)
-                return Response(
-                    {"error": "Something went wrong please try again later"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+            capture_exception(e)
+            return Response(
+                {"error": "Something went wrong please try again later"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         except Exception as e:
             capture_exception(e)
             return Response(

@@ -22,8 +22,7 @@ def get_jwt_token():
     }
 
     priv_rsakey = load_pem_private_key(secret, None, default_backend())
-    token = jwt.encode(payload, priv_rsakey, algorithm="RS256")
-    return token
+    return jwt.encode(payload, priv_rsakey, algorithm="RS256")
 
 
 def get_github_metadata(installation_id):
@@ -31,18 +30,17 @@ def get_github_metadata(installation_id):
 
     url = f"https://api.github.com/app/installations/{installation_id}"
     headers = {
-        "Authorization": "Bearer " + str(token),
+        "Authorization": f"Bearer {str(token)}",
         "Accept": "application/vnd.github+json",
     }
-    response = requests.get(url, headers=headers).json()
-    return response
+    return requests.get(url, headers=headers).json()
 
 
 def get_github_repos(access_tokens_url, repositories_url):
     token = get_jwt_token()
 
     headers = {
-        "Authorization": "Bearer " + str(token),
+        "Authorization": f"Bearer {str(token)}",
         "Accept": "application/vnd.github+json",
     }
 
@@ -53,14 +51,13 @@ def get_github_repos(access_tokens_url, repositories_url):
 
     oauth_token = oauth_response.get("token", "")
     headers = {
-        "Authorization": "Bearer " + str(oauth_token),
+        "Authorization": f"Bearer {str(oauth_token)}",
         "Accept": "application/vnd.github+json",
     }
-    response = requests.get(
+    return requests.get(
         repositories_url,
         headers=headers,
     ).json()
-    return response
 
 
 def delete_github_installation(installation_id):
@@ -68,18 +65,17 @@ def delete_github_installation(installation_id):
 
     url = f"https://api.github.com/app/installations/{installation_id}"
     headers = {
-        "Authorization": "Bearer " + str(token),
+        "Authorization": f"Bearer {str(token)}",
         "Accept": "application/vnd.github+json",
     }
-    response = requests.delete(url, headers=headers)
-    return response
+    return requests.delete(url, headers=headers)
 
 
 def get_github_repo_details(access_tokens_url, owner, repo):
     token = get_jwt_token()
 
     headers = {
-        "Authorization": "Bearer " + str(token),
+        "Authorization": f"Bearer {str(token)}",
         "Accept": "application/vnd.github+json",
         "X-GitHub-Api-Version": "2022-11-28",
     }
@@ -91,7 +87,7 @@ def get_github_repo_details(access_tokens_url, owner, repo):
 
     oauth_token = oauth_response.get("token")
     headers = {
-        "Authorization": "Bearer " + oauth_token,
+        "Authorization": f"Bearer {oauth_token}",
         "Accept": "application/vnd.github+json",
     }
     open_issues = requests.get(
@@ -112,11 +108,11 @@ def get_github_repo_details(access_tokens_url, owner, repo):
         last_url = labels_response.links.get("last").get("url")
         parsed_url = urlparse(last_url)
         last_page_value = parse_qs(parsed_url.query)["page"][0]
-        total_labels = total_labels + 100 * (last_page_value - 1)
+        total_labels += 100 * (last_page_value - 1)
 
         # Get labels in last page
         last_page_labels = requests.get(last_url, headers=headers).json()
-        total_labels = total_labels + len(last_page_labels)
+        total_labels += len(last_page_labels)
     else:
         total_labels = len(labels_response.json())
 

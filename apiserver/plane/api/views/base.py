@@ -59,8 +59,7 @@ class BaseViewSet(ModelViewSet, BasePaginator):
 
     @property
     def project_id(self):
-        project_id = self.kwargs.get("project_id", None)
-        if project_id:
+        if project_id := self.kwargs.get("project_id", None):
             return project_id
 
         if resolve(self.request.path_info).url_name == "project":

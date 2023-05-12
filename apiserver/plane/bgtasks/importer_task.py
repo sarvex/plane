@@ -60,8 +60,7 @@ def service_importer(service, importer_id):
                 email__in=[
                     user.get("email").strip().lower()
                     for user in users
-                    if user.get("import", False) == "invite"
-                    or user.get("import", False) == "map"
+                    if user.get("import", False) in ["invite", "map"]
                 ]
             )
 

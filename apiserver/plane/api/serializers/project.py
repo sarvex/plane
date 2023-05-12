@@ -51,9 +51,7 @@ class ProjectSerializer(BaseSerializer):
 
         # If identifier is not passed update the project and return
         if identifier == "":
-            project = super().update(instance, validated_data)
-            return project
-
+            return super().update(instance, validated_data)
         # If no Project Identifier is found create it
         project_identifier = ProjectIdentifier.objects.filter(
             name=identifier, workspace_id=instance.workspace_id

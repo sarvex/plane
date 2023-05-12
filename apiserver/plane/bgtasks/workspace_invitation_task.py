@@ -25,9 +25,9 @@ def workspace_invitation(email, workspace_id, token, current_site, invitor):
         realtivelink = (
             f"/workspace-member-invitation/{workspace_member_invite.id}?email={email}"
         )
-        abs_url = "http://" + current_site + realtivelink
+        abs_url = f"http://{current_site}{realtivelink}"
 
-        from_email_string = f"Team Plane <team@mailer.plane.so>"
+        from_email_string = "Team Plane <team@mailer.plane.so>"
 
         subject = f"{invitor or email} invited you to join {workspace.name} on Plane"
 

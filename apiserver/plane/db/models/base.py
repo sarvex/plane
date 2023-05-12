@@ -24,7 +24,6 @@ class BaseModel(AuditModel):
         if user is None or user.is_anonymous:
             self.created_by = None
             self.updated_by = None
-            super(BaseModel, self).save(*args, **kwargs)
         else:
             # Check if the model is being created or updated
             if self._state.adding:
@@ -33,7 +32,8 @@ class BaseModel(AuditModel):
                 self.updated_by = None
             # If updated only set updated_by value don't touch created_by
             self.updated_by = user
-            super(BaseModel, self).save(*args, **kwargs)
+
+        super(BaseModel, self).save(*args, **kwargs)
 
     def __str__(self):
         return str(self.id)

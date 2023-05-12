@@ -38,15 +38,15 @@ class StateViewSet(BaseViewSet):
 
     def list(self, request, slug, project_id):
         try:
-            state_dict = dict()
             states = StateSerializer(self.get_queryset(), many=True).data
 
-            for key, value in groupby(
-                sorted(states, key=lambda state: state["group"]),
-                lambda state: state.get("group"),
-            ):
-                state_dict[str(key)] = list(value)
-
+            state_dict = {
+                str(key): list(value)
+                for key, value in groupby(
+                    sorted(states, key=lambda state: state["group"]),
+                    lambda state: state.get("group"),
+                )
+            }
             return Response(state_dict, status=status.HTTP_200_OK)
         except Exception as e:
             capture_exception(e)

@@ -75,9 +75,8 @@ class Issue(ProjectBaseModel):
         ordering = ("-created_at",)
 
     def save(self, *args, **kwargs):
-        # This means that the model isn't saved to the database yet
-        if self.state is None:
-            try:
+        try:
+            if self.state is None:
                 from plane.db.models import State
 
                 default_state = State.objects.filter(
@@ -88,10 +87,7 @@ class Issue(ProjectBaseModel):
                     self.state = State.objects.filter(project=self.project).first()
                 else:
                     self.state = default_state
-            except ImportError:
-                pass
-        else:
-            try:
+            else:
                 from plane.db.models import State, PageBlock
 
                 # Get the completed states of the project
@@ -112,8 +108,8 @@ class Issue(ProjectBaseModel):
                     )
                     self.completed_at = None
 
-            except ImportError:
-                pass
+        except ImportError:
+            pass
         if self._state.adding:
             # Get the maximum display_id value from the database
 

@@ -18,7 +18,7 @@ class FileAssetEndpoint(BaseAPIView):
     """
 
     def get(self, request, workspace_id, asset_key):
-        asset_key = str(workspace_id) + "/" + asset_key
+        asset_key = f"{str(workspace_id)}/{asset_key}"
         files = FileAsset.objects.filter(asset=asset_key)
         serializer = FileAssetSerializer(files, context={"request": request}, many=True)
         return Response(serializer.data)
@@ -45,7 +45,7 @@ class FileAssetEndpoint(BaseAPIView):
 
     def delete(self, request, workspace_id, asset_key):
         try:
-            asset_key = str(workspace_id) + "/" + asset_key
+            asset_key = f"{str(workspace_id)}/{asset_key}"
             file_asset = FileAsset.objects.get(asset=asset_key)
             # Delete the file from storage
             file_asset.asset.delete(save=False)

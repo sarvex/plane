@@ -59,7 +59,7 @@ class ProjectViewSet(BaseViewSet):
     ]
 
     def get_serializer_class(self, *args, **kwargs):
-        if self.action == "update" or self.action == "partial_update":
+        if self.action in ["update", "partial_update"]:
             return ProjectSerializer
         return ProjectDetailSerializer
 
@@ -177,12 +177,11 @@ class ProjectViewSet(BaseViewSet):
                     {"name": "The project name is already taken"},
                     status=status.HTTP_410_GONE,
                 )
-            else:
-                capture_exception(e)
-                return Response(
-                    {"error": "Something went wrong please try again later"},
-                    status=status.HTTP_410_GONE,
-                )
+            capture_exception(e)
+            return Response(
+                {"error": "Something went wrong please try again later"},
+                status=status.HTTP_410_GONE,
+            )
         except Workspace.DoesNotExist as e:
             return Response(
                 {"error": "Workspace does not exist"}, status=status.HTTP_404_NOT_FOUND
@@ -458,16 +457,14 @@ class AddTeamToProjectEndpoint(BaseAPIView):
 
             workspace = Workspace.objects.get(slug=slug)
 
-            project_members = []
-            for member in team_members:
-                project_members.append(
-                    ProjectMember(
-                        project_id=project_id,
-                        member_id=member,
-                        workspace=workspace,
-                    )
+            project_members = [
+                ProjectMember(
+                    project_id=project_id,
+                    member_id=member,
+                    workspace=workspace,
                 )
-
+                for member in team_members
+            ]
             ProjectMember.objects.bulk_create(
                 project_members, batch_size=10, ignore_conflicts=True
             )
@@ -723,18 +720,17 @@ class ProjectFavoritesViewSet(BaseViewSet):
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except IntegrityError as e:
-            print(str(e))
+            print(e)
             if "already exists" in str(e):
                 return Response(
                     {"error": "The project is already added to favorites"},
                     status=status.HTTP_410_GONE,
                 )
-            else:
-                capture_exception(e)
-                return Response(
-                    {"error": "Something went wrong please try again later"},
-                    status=status.HTTP_410_GONE,
-                )
+            capture_exception(e)
+            return Response(
+                {"error": "Something went wrong please try again later"},
+                status=status.HTTP_410_GONE,
+            )
         except Exception as e:
             capture_exception(e)
             return Response(

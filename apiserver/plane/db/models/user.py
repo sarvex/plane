@@ -108,9 +108,9 @@ def send_welcome_email(sender, instance, created, **kwargs):
         if created and not instance.is_bot:
             first_name = instance.first_name.capitalize()
             to_email = instance.email
-            from_email_string = f"Team Plane <team@mailer.plane.so>"
+            from_email_string = "Team Plane <team@mailer.plane.so>"
 
-            subject = f"Welcome to Plane ✈️!"
+            subject = "Welcome to Plane ✈️!"
 
             context = {"first_name": first_name, "email": instance.email}
 

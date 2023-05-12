@@ -18,11 +18,11 @@ def email_verification(first_name, email, token, current_site):
 
     try:
         realtivelink = "/request-email-verification/" + "?token=" + str(token)
-        abs_url = "http://" + current_site + realtivelink
+        abs_url = f"http://{current_site}{realtivelink}"
 
-        from_email_string = f"Team Plane <team@mailer.plane.so>"
+        from_email_string = "Team Plane <team@mailer.plane.so>"
 
-        subject = f"Verify your Email!"
+        subject = "Verify your Email!"
 
         context = {
             "first_name": first_name,

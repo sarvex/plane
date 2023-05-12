@@ -25,7 +25,7 @@ def group_results(results_data, group_by):
     Returns:
         obj: grouped results
     """
-    response_dict = dict()
+    response_dict = {}
 
     if group_by == "priority":
         response_dict = {
@@ -41,22 +41,15 @@ def group_results(results_data, group_by):
         if isinstance(group_attribute, list):
             if len(group_attribute):
                 for attrib in group_attribute:
-                    if str(attrib) in response_dict:
-                        response_dict[str(attrib)].append(value)
-                    else:
+                    if str(attrib) not in response_dict:
                         response_dict[str(attrib)] = []
-                        response_dict[str(attrib)].append(value)
+                    response_dict[str(attrib)].append(value)
             else:
-                if str(None) in response_dict:
-                    response_dict[str(None)].append(value)
-                else:
+                if str(None) not in response_dict:
                     response_dict[str(None)] = []
-                    response_dict[str(None)].append(value)
+                response_dict[str(None)].append(value)
         else:
-            if str(group_attribute) in response_dict:
-                response_dict[str(group_attribute)].append(value)
-            else:
+            if str(group_attribute) not in response_dict:
                 response_dict[str(group_attribute)] = []
-                response_dict[str(group_attribute)].append(value)
-
+            response_dict[str(group_attribute)].append(value)
     return response_dict

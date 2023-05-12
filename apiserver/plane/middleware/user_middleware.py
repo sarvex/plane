@@ -27,7 +27,5 @@ class UserMiddleware(object):
                 timezone.activate(pytz.timezone(user.user_timezone))
         except Exception as e:
             print(e)
-        
-        response = self.get_response(request)
 
-        return response
+        return self.get_response(request)

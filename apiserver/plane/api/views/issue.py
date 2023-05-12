@@ -172,9 +172,7 @@ class IssueViewSet(BaseViewSet):
 
             issues = IssueLiteSerializer(issue_queryset, many=True).data
 
-            ## Grouping the results
-            group_by = request.GET.get("group_by", False)
-            if group_by:
+            if group_by := request.GET.get("group_by", False):
                 return Response(
                     group_results(issues, group_by), status=status.HTTP_200_OK
                 )

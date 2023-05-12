@@ -59,7 +59,7 @@ def track_parent(
     issue_activities,
 ):
     if current_instance.get("parent") != requested_data.get("parent"):
-        if requested_data.get("parent") == None:
+        if requested_data.get("parent") is None:
             old_parent = Issue.objects.get(pk=current_instance.get("parent"))
             issue_activities.append(
                 IssueActivity(
@@ -108,7 +108,7 @@ def track_priority(
     issue_activities,
 ):
     if current_instance.get("priority") != requested_data.get("priority"):
-        if requested_data.get("priority") == None:
+        if requested_data.get("priority") is None:
             issue_activities.append(
                 IssueActivity(
                     issue_id=issue_id,
@@ -206,7 +206,7 @@ def track_target_date(
     issue_activities,
 ):
     if current_instance.get("target_date") != requested_data.get("target_date"):
-        if requested_data.get("target_date") == None:
+        if requested_data.get("target_date") is None:
             issue_activities.append(
                 IssueActivity(
                     issue_id=issue_id,
@@ -246,7 +246,7 @@ def track_start_date(
     issue_activities,
 ):
     if current_instance.get("start_date") != requested_data.get("start_date"):
-        if requested_data.get("start_date") == None:
+        if requested_data.get("start_date") is None:
             issue_activities.append(
                 IssueActivity(
                     issue_id=issue_id,
@@ -395,16 +395,11 @@ def track_blocks(
         current_instance.get("blocked_issues")
     ):
         for block in requested_data.get("blocks_list"):
-            if (
-                len(
-                    [
-                        blocked
-                        for blocked in current_instance.get("blocked_issues")
-                        if blocked.get("block") == block
-                    ]
-                )
-                == 0
-            ):
+            if not [
+                blocked
+                for blocked in current_instance.get("blocked_issues")
+                if blocked.get("block") == block
+            ]:
                 issue = Issue.objects.get(pk=block)
                 issue_activities.append(
                     IssueActivity(
@@ -457,16 +452,11 @@ def track_blockings(
         current_instance.get("blocker_issues")
     ):
         for block in requested_data.get("blockers_list"):
-            if (
-                len(
-                    [
-                        blocked
-                        for blocked in current_instance.get("blocker_issues")
-                        if blocked.get("blocked_by") == block
-                    ]
-                )
-                == 0
-            ):
+            if not [
+                blocked
+                for blocked in current_instance.get("blocker_issues")
+                if blocked.get("blocked_by") == block
+            ]:
                 issue = Issue.objects.get(pk=block)
                 issue_activities.append(
                     IssueActivity(
@@ -638,7 +628,7 @@ def track_estimate_points(
     requested_data, current_instance, issue_id, project, actor, issue_activities
 ):
     if current_instance.get("estimate_point") != requested_data.get("estimate_point"):
-        if requested_data.get("estimate_point") == None:
+        if requested_data.get("estimate_point") is None:
             issue_activities.append(
                 IssueActivity(
                     issue_id=issue_id,
@@ -931,20 +921,18 @@ def issue_activity(
         # Save all the values to database
         issue_activities_created = IssueActivity.objects.bulk_create(issue_activities)
         # Post the updates to segway for integrations and webhooks
-        if len(issue_activities_created):
-            # Don't send activities if the actor is a bot
-            if settings.PROXY_BASE_URL:
-                for issue_activity in issue_activities_created:
-                    headers = {"Content-Type": "application/json"}
-                    issue_activity_json = json.dumps(
-                        IssueActivitySerializer(issue_activity).data,
-                        cls=DjangoJSONEncoder,
-                    )
-                    _ = requests.post(
-                        f"{settings.PROXY_BASE_URL}/hooks/workspaces/{str(issue_activity.workspace_id)}/projects/{str(issue_activity.project_id)}/issues/{str(issue_activity.issue_id)}/issue-activity-hooks/",
-                        json=issue_activity_json,
-                        headers=headers,
-                    )
+        if len(issue_activities_created) and settings.PROXY_BASE_URL:
+            for issue_activity in issue_activities_created:
+                headers = {"Content-Type": "application/json"}
+                issue_activity_json = json.dumps(
+                    IssueActivitySerializer(issue_activity).data,
+                    cls=DjangoJSONEncoder,
+                )
+                _ = requests.post(
+                    f"{settings.PROXY_BASE_URL}/hooks/workspaces/{str(issue_activity.workspace_id)}/projects/{str(issue_activity.project_id)}/issues/{str(issue_activity.issue_id)}/issue-activity-hooks/",
+                    json=issue_activity_json,
+                    headers=headers,
+                )
         return
     except Exception as e:
         print(e)

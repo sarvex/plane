@@ -172,12 +172,11 @@ class WorkspaceIntegrationViewSet(BaseViewSet):
                     {"error": "Integration is already active in the workspace"},
                     status=status.HTTP_410_GONE,
                 )
-            else:
-                capture_exception(e)
-                return Response(
-                    {"error": "Something went wrong please try again later"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+            capture_exception(e)
+            return Response(
+                {"error": "Something went wrong please try again later"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         except (Workspace.DoesNotExist, Integration.DoesNotExist) as e:
             capture_exception(e)
             return Response(
@@ -198,10 +197,9 @@ class WorkspaceIntegrationViewSet(BaseViewSet):
             )
 
             if workspace_integration.integration.provider == "github":
-                installation_id = workspace_integration.config.get(
+                if installation_id := workspace_integration.config.get(
                     "installation_id", False
-                )
-                if installation_id:
+                ):
                     delete_github_installation(installation_id=installation_id)
 
             workspace_integration.delete()

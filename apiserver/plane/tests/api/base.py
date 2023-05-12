@@ -31,4 +31,4 @@ class AuthenticatedAPITest(BaseAPITest):
         self.access_token = access_token
 
         # Set Up Authentication Token
-        self.client.credentials(HTTP_AUTHORIZATION="Bearer " + access_token)
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token}")

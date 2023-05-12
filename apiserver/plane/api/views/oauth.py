@@ -41,12 +41,11 @@ def validate_google_token(token, client_id):
         email = id_info.get("email")
         first_name = id_info.get("given_name")
         last_name = id_info.get("family_name", "")
-        data = {
+        return {
             "email": email,
             "first_name": first_name,
             "last_name": last_name,
         }
-        return data
     except Exception as e:
         print(e)
         raise exceptions.AuthenticationFailed("Error with Google connection.")
@@ -85,9 +84,7 @@ def get_access_token(request_token: str, client_id: str) -> str:
     res = requests.post(url, headers=headers)
 
     data = res.json()
-    access_token = data["access_token"]
-
-    return access_token
+    return data["access_token"]
 
 
 def get_user_data(access_token: str) -> dict:
@@ -100,7 +97,7 @@ def get_user_data(access_token: str) -> dict:
     if not isinstance(access_token, str):
         raise ValueError("The request token has to be a string!")
 
-    access_token = "token " + access_token
+    access_token = f"token {access_token}"
     url = "https://api.github.com/user"
     headers = {"Authorization": access_token}
 
@@ -146,7 +143,7 @@ class OauthEndpoint(BaseAPIView):
                 data = get_user_data(access_token)
 
             email = data.get("email", None)
-            if email == None:
+            if email is None:
                 return Response(
                     {
                         "error": "Something went wrong. Please try again later or contact the support team."
@@ -154,13 +151,7 @@ class OauthEndpoint(BaseAPIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            if "@" in email:
-                user = User.objects.get(email=email)
-                email = data["email"]
-                channel = "email"
-                mobile_number = uuid.uuid4().hex
-                email_verified = True
-            else:
+            if "@" not in email:
                 return Response(
                     {
                         "error": "Something went wrong. Please try again later or contact the support team."
@@ -168,6 +159,11 @@ class OauthEndpoint(BaseAPIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
+            user = User.objects.get(email=email)
+            email = data["email"]
+            channel = "email"
+            mobile_number = uuid.uuid4().hex
+            email_verified = True
             ## Login Case
 
             if not user.is_active:
@@ -181,7 +177,7 @@ class OauthEndpoint(BaseAPIView):
             user.last_active = timezone.now()
             user.last_login_time = timezone.now()
             user.last_login_ip = request.META.get("REMOTE_ADDR")
-            user.last_login_medium = f"oauth"
+            user.last_login_medium = "oauth"
             user.last_login_uagent = request.META.get("HTTP_USER_AGENT")
             user.is_email_verified = email_verified
             user.save()
@@ -232,12 +228,7 @@ class OauthEndpoint(BaseAPIView):
 
             username = uuid.uuid4().hex
 
-            if "@" in email:
-                email = data["email"]
-                mobile_number = uuid.uuid4().hex
-                channel = "email"
-                email_verified = True
-            else:
+            if "@" not in email:
                 return Response(
                     {
                         "error": "Something went wrong. Please try again later or contact the support team."
@@ -245,6 +236,10 @@ class OauthEndpoint(BaseAPIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
+            email = data["email"]
+            mobile_number = uuid.uuid4().hex
+            channel = "email"
+            email_verified = True
             user = User(
                 username=username,
                 email=email,

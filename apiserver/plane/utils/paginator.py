@@ -21,12 +21,7 @@ class Cursor:
         )
 
     def __repr__(self):
-        return "<{}: value={} offset={} is_prev={}>".format(
-            type(self).__name__,
-            self.value,
-            self.offset,
-            int(self.is_prev),
-        )
+        return f"<{type(self).__name__}: value={self.value} offset={self.offset} is_prev={int(self.is_prev)}>"
 
     def __bool__(self):
         return bool(self.has_results)
@@ -205,13 +200,8 @@ class BasePaginator:
             results = cursor_result.results
 
         # Add Manipulation functions to the response
-        if controller is not None:
-            results = controller(results)
-        else:
-            results = results
-
-        # Return the response
-        response = Response(
+        results = controller(results) if controller is not None else results
+        return Response(
             {
                 "next_cursor": str(cursor_result.next),
                 "prev_cursor": str(cursor_result.prev),
@@ -223,5 +213,3 @@ class BasePaginator:
                 "results": results,
             }
         )
-
-        return response

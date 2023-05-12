@@ -16,11 +16,11 @@ def forgot_password(first_name, email, uidb64, token, current_site):
 
     try:
         realtivelink = f"/email-verify/?uidb64={uidb64}&token={token}/"
-        abs_url = "http://" + current_site + realtivelink
+        abs_url = f"http://{current_site}{realtivelink}"
 
-        from_email_string = f"Team Plane <team@mailer.plane.so>"
+        from_email_string = "Team Plane <team@mailer.plane.so>"
 
-        subject = f"Verify your Email!"
+        subject = "Verify your Email!"
 
         context = {
             "first_name": first_name,

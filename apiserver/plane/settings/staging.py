@@ -1,4 +1,5 @@
 """Production settings and globals."""
+
 from urllib.parse import urlparse
 import ssl
 import certifi
@@ -13,16 +14,6 @@ from sentry_sdk.integrations.redis import RedisIntegration
 from .common import *  # noqa
 # Database
 DEBUG = True
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": "plane",
-        "USER": "",
-        "PASSWORD": "",
-        "HOST": "",
-    }
-}
-
 # CORS WHITELIST ON PROD
 CORS_ORIGIN_WHITELIST = [
     # "https://example.com",
@@ -30,8 +21,7 @@ CORS_ORIGIN_WHITELIST = [
     # "http://localhost:8080",
     # "http://127.0.0.1:9000"
 ]
-# Parse database configuration from $DATABASE_URL
-DATABASES["default"] = dj_database_url.config()
+DATABASES = {"default": dj_database_url.config()}
 SITE_ID = 1
 
 # Enable Connection Pooling (if desired)

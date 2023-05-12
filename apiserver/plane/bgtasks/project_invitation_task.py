@@ -20,9 +20,9 @@ def project_invitation(email, project_id, token, current_site):
         )
 
         relativelink = f"/project-member-invitation/{project_member_invite.id}"
-        abs_url = "http://" + current_site + relativelink
+        abs_url = f"http://{current_site}{relativelink}"
 
-        from_email_string = f"Team Plane <team@mailer.plane.so>"
+        from_email_string = "Team Plane <team@mailer.plane.so>"
 
         subject = f"{project.created_by.first_name or project.created_by.email} invited you to join {project.name} on Plane"
 
