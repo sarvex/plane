@@ -29,7 +29,7 @@
     "@tailwindcss/typography": "^0.5.9",
     "@types/lodash.debounce": "^4.0.7",
     "@types/react-datepicker": "^4.8.0",
-    "axios": "^1.1.3",
+    "axios": "^1.6.0",
     "cmdk": "^0.2.0",
     "dotenv": "^16.0.3",
     "js-cookie": "^3.0.1",
