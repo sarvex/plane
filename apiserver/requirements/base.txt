@@ -37,7 +37,7 @@ uvicorn==0.29.0
 # sockets
 channels==4.1.0
 # ai
-litellm==1.51.0
+litellm==1.61.15
 # slack
 slack-sdk==3.27.1
 # apm
